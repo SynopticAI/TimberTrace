@@ -109,6 +109,7 @@ def apply_notch(
         depth: How deep the notch cuts into the beam (meters)
         width: Width of the notch in X direction (meters)
         angle: Rotation angle of notch in degrees (0 = perpendicular to beam)
+               For a sparrenkerve, this should be the roof pitch angle.
         
     Returns:
         Modified mesh with notch applied
@@ -116,7 +117,7 @@ def apply_notch(
     # Create a cutting box for the notch
     # The notch cuts downward from the position
     notch_length = width * 1.2  # Make slightly longer to ensure clean cut
-    notch_height = depth
+    notch_height = depth * 1.5  # Make slightly deeper for clean cut
     notch_width = width
     
     # Create the cutting box
@@ -129,12 +130,20 @@ def apply_notch(
     
     # Rotate if needed
     if angle != 0:
-        rotation = Rotation.from_euler('z', angle, degrees=True)
+        # Rotate around X-axis to create angled "seat" for bird's mouth
+        rotation = Rotation.from_euler('x', angle, degrees=True) # <--- FIX: Was 'z'
         cutting_box.apply_transform(rotation.as_matrix())
     
     # Position the cutting box
     # Position is the center of the notch opening
-    cutting_box.apply_translation(position)
+    # We move it slightly "into" the beam to ensure a clean cut
+    pos_offset = position.copy()
+    if pos_offset[1] < 0: # Bottom face
+        pos_offset[1] += depth * 0.1
+    else: # Top face
+        pos_offset[1] -= depth * 0.1
+        
+    cutting_box.apply_translation(pos_offset)
     
     # Perform boolean difference (subtract notch from beam)
     try:
@@ -146,7 +155,6 @@ def apply_notch(
     except Exception as e:
         print(f"Warning: Notch boolean operation failed: {e}. Returning original mesh.")
         return mesh
-
 
 def apply_mortise(
     mesh: trimesh.Trimesh,
@@ -165,24 +173,25 @@ def apply_mortise(
         mesh: Beam mesh to modify
         position: 3D position [x, y, z] of mortise opening in beam local coords
         width: Width of mortise in X direction (meters)
-        height: Height of mortise in Y direction (meters)
-        depth: Depth of mortise penetration into beam (meters)
+        height: Height/Length of mortise in Z direction (along beam) (meters)
+        depth: Depth of mortise penetration into beam in Y direction (meters)
         
     Returns:
         Modified mesh with mortise applied
     """
     # Create a cutting box for the mortise
-    # The mortise cuts inward from the position
+    # Make penetration (height) and length slightly larger
+    # to avoid co-planar boolean failures.
     cutting_box = create_box_mesh(
-        width=width,
-        height=height,
-        length=depth,
+        width=width,              # X-direction
+        height=depth * 1.1,       # Y-direction (penetration) <--- FIX: Was 'height'
+        length=height * 1.1,      # Z-direction (along beam) <--- FIX: Was 'depth'
         center=True
     )
     
     # Position the cutting box
     # For a mortise on the bottom face, position is at the surface
-    # and we need to move it down by depth/2 to cut inward
+    # and we need to move it UP by depth/2 to cut inward.
     mortise_position = position.copy()
     mortise_position[1] += depth / 2  # Move into the beam
     

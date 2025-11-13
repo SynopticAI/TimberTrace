@@ -88,13 +88,16 @@ class Stuhlpfosten(BaseBeam):
             create_box_mesh, apply_transform
         )
         
+        # Create box mesh NOT centered, so its base is at (0,0,0) local
         mesh = create_box_mesh(
             width=self.width_m,
             height=self.height_m,
-            length=self.length
+            length=self.length,
+            center=False # <-- THIS IS THE FIX
         )
         
         mesh = self._create_joint_geometry(mesh)
+        # The position arg is the base, so this transform is now correct
         mesh = apply_transform(mesh, self.position, self.orientation)
         
         return mesh
@@ -121,8 +124,9 @@ class Stuhlpfosten(BaseBeam):
         tenon_width = self.width_m * 0.33
         tenon_depth = self.height_m * 0.33
         
-        # Position at top of post (post extends along Z-axis)
-        top_position = np.array([0, 0, self.length/2])
+        # Position at top of post
+        # Since center=False, beam runs from z=0 to z=length
+        top_position = np.array([0, 0, self.length]) # <--- FIX: Was self.length/2
         
         mesh = apply_tenon(
             mesh=mesh,
@@ -136,7 +140,7 @@ class Stuhlpfosten(BaseBeam):
         # For now, keep simple - could add mortise or other joint
         
         return mesh
-    
+
     @classmethod
     def from_xml(cls, element: ET.Element) -> 'Stuhlpfosten':
         """Deserialize from XML"""

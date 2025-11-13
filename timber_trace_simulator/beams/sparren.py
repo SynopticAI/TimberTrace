@@ -86,21 +86,23 @@ class Pfettendach_Sparren(BaseBeam):
             create_box_mesh, apply_notch, apply_transform
         )
         
-        # Create base rectangular beam
+        # Create base rectangular beam, NOT centered
         mesh = create_box_mesh(
             width=self.width_m,
             height=self.height_m,
-            length=self.length
+            length=self.length,
+            center=False # <-- THIS IS THE FIX
         )
         
         # Apply notches at each Pfette connection
         mesh = self._create_joint_geometry(mesh)
         
         # Transform to world coordinates
+        # Position is the start point, so this is now correct
         mesh = apply_transform(mesh, self.position, self.orientation)
         
         return mesh
-    
+
     def _create_joint_geometry(self, mesh):
         """
         Apply notches (Sparrenkerve) at Pfette connection points.
@@ -118,20 +120,21 @@ class Pfettendach_Sparren(BaseBeam):
             pos_norm = connection['position_normalized']
             notch_depth = connection.get('notch_depth', 0.03)  # Default 30mm
             
-            # Position along beam length (beam extends along Z-axis in local coords)
-            z_position = (pos_norm - 0.5) * self.length
+            # Position along beam length
+            # Since center=False, beam runs from z=0 to z=length
+            z_position = pos_norm * self.length # <--- FIX: Was (pos_norm - 0.5) * self.length
             
             # Apply notch on bottom face (-Y direction)
             mesh = apply_notch(
                 mesh=mesh,
                 position=np.array([0, -self.height_m/2, z_position]),
                 depth=notch_depth,
-                width=self.width_m * 0.9,  # Notch slightly narrower than beam
-                angle=0  # Perpendicular notch
+                width=self.width_m * 1.1,  # Make slightly wider than beam for clean cut
+                angle=self.pitch_angle  # <--- FIX: Was 0
             )
         
         return mesh
-    
+
     @classmethod
     def from_xml(cls, element: ET.Element) -> 'Pfettendach_Sparren':
         """Deserialize from XML"""
