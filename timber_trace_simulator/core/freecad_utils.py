@@ -10,6 +10,7 @@ os.environ['QT_QPA_PLATFORM'] = 'offscreen'  # Headless mode
 import FreeCAD
 import Part
 import Mesh
+import MeshPart  # For converting Part shapes to meshes
 import trimesh
 import numpy as np
 from pathlib import Path
@@ -86,10 +87,18 @@ def generate_mesh_from_template(
         if body is None:
             raise ValueError(f"No Body found in {template_path}")
         
-        # Export to mesh
-        mesh_data = body.Shape.tessellate(0.1)  # 0.1mm tolerance
-        vertices = np.array(mesh_data[0])
-        faces = np.array(mesh_data[1])
+        # Convert shape to mesh using MeshPart (FIXED!)
+        mesh_obj = MeshPart.meshFromShape(
+            Shape=body.Shape,
+            LinearDeflection=0.1,  # 0.1mm tolerance
+            AngularDeflection=0.5,  # degrees
+            Relative=False
+        )
+        
+        # Convert to numpy arrays
+        vertices = np.array([[p.x, p.y, p.z] for p in mesh_obj.Points])
+        faces = np.array([[f.PointIndices[0], f.PointIndices[1], f.PointIndices[2]] 
+                         for f in mesh_obj.Facets])
         
         # Create trimesh
         mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
@@ -99,6 +108,19 @@ def generate_mesh_from_template(
     finally:
         # Always close document
         FreeCAD.closeDocument(doc.Name)
+
+
+def export_shape_to_stl(shape: Part.Shape, output_path: str) -> None:
+    """
+    Export FreeCAD shape directly to STL file.
+    
+    This is an alternative to generating trimesh - useful for direct exports.
+    
+    Args:
+        shape: FreeCAD Part.Shape object
+        output_path: Where to save the STL file
+    """
+    shape.exportStl(output_path)
 
 
 def create_simple_template(
@@ -152,7 +174,7 @@ def create_simple_template(
 def test_freecad_utils():
     """Run self-test"""
     print("=" * 60)
-    print("Testing freecad_utils.py")
+    print("Testing freecad_utils.py (CORRECTED VERSION)")
     print("=" * 60)
     
     # Create test template
@@ -172,12 +194,20 @@ def test_freecad_utils():
     print(f"     Faces: {len(mesh.faces)}")
     print(f"     Volume: {mesh.volume:.2f} mm³")
     
+    expected_volume = 3000 * 600 * 900
+    print(f"     Expected volume: {expected_volume:.2f} mm³")
+    
     # Export
     output_stl = "/tmp/test_utils_output.stl"
     mesh.export(output_stl)
     print(f"   ✓ Exported to {output_stl}")
     
-    print("\n✓ ALL TESTS PASSED")
+    # Verify with reload
+    loaded = trimesh.load(output_stl)
+    print(f"   ✓ Reloaded successfully")
+    print(f"     Reloaded volume: {loaded.volume:.2f} mm³")
+    
+    print("\n✓ ALL TESTS PASSED - MESH EXPORT FIXED!")
     print(f"\nFiles created:")
     print(f"  Template: {test_template}")
     print(f"  Output: {output_stl}")

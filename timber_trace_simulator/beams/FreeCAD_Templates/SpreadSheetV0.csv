@@ -1,0 +1,39 @@
+Firstpfette_Bottom_Offset	4000
+Firstpfette_Length	12000
+Firstpfette_Height	200
+Firstpfette_Width	100
+Firstpfette_Extension_Length	500
+
+Mittelpfette_Bottom_Offset	2200
+Mittelpfette_Length	12000
+Mittelpfette_Height	200
+Mittelpfette_Width	100
+Mittelpfette_Extension_Length	500
+
+Fusspfette_Bottom_Offset	400
+Fusspfette_Length	12000
+Fusspfette_Height	200
+Fusspfette_Width	100
+Fusspfette_Extension_Length	50
+Sparre_Count	15
+Sparre_Bottom_Offset	400
+Sparre_Angle	40
+Sparre_Height	200
+Sparre_Width	100
+Sparre_Notch_Depth	35
+
+Mittelpfosten_Count	3
+Mittelpfosten_Bottom_Offset	1
+Mittelpfosten_Width_X	100
+Mittelpfosten_Width_Y	100
+Mittelpfosten_Tenon_Width_X	40
+Mittelpfosten_Tenon_Width_Y	40
+Mittelpfosten_Tenon_Height	100
+
+Seitenpfosten_Bottom_Offset	1
+Seitenpfosten_Width_X	100
+Seitenpfosten_Width_Y	100
+Seitenpfosten_Tenon_Width_X	40
+Seitenpfosten_Tenon_Width_Y	40
+Seitenpfosten_Tenon_Height	100
+Seitenpfosten_Count	5
