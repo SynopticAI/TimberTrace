@@ -1,29 +1,28 @@
 """
-Base Beam Class for Timber Trace Simulator
+Base Beam Class for Timber Trace Simulator - FreeCAD Version
 
 Abstract base class that all concrete beam types inherit from.
-Defines the common interface and shared functionality.
+Simplified for FreeCAD template-based geometry generation.
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, Tuple, Optional, List
+from typing import Dict, Tuple, Optional
 import numpy as np
 from scipy.spatial.transform import Rotation
-import xml.etree.ElementTree as ET
 
 
 class BaseBeam(ABC):
     """
     Abstract base class for all timber beam types.
     
-    All concrete beam classes must inherit from this and implement:
-    - get_parameters()
-    - get_mesh()
-    - _create_joint_geometry()
+    All concrete beam classes must implement:
+    - get_freecad_parameters() - Returns dict for FreeCAD spreadsheet
+    - freecad_template - Class variable with template filename
     """
     
-    # Class variable to be overridden by subclasses
+    # Must be overridden by subclasses
     beam_type: str = "BaseBeam"
+    freecad_template: str = "base.FCStd"
     
     def __init__(
         self,
@@ -39,7 +38,7 @@ class BaseBeam(ABC):
         
         Args:
             beam_id: Unique identifier for this beam instance
-            position: 3D position [x, y, z] in meters (beam center or start point)
+            position: 3D position [x, y, z] in meters (beam START point)
             orientation: Rotation object defining beam orientation
             length: Beam length in meters
             cross_section: (width, height) in millimeters
@@ -48,17 +47,10 @@ class BaseBeam(ABC):
         self.beam_id = beam_id
         self.position = np.array(position, dtype=float)
         self.orientation = orientation
-        self.length = length
+        self.length = length  # meters
         self.cross_section = cross_section  # (width, height) in mm
         self.wood_species = wood_species
-        
-        # Derived properties
-        self.width_m = cross_section[0] / 1000.0  # Convert mm to meters
-        self.height_m = cross_section[1] / 1000.0
-        
-        # Will be set by generator
-        self.connected_beam_ids: List[int] = []
-        
+    
     @property
     def width(self) -> float:
         """Width in millimeters"""
@@ -69,176 +61,87 @@ class BaseBeam(ABC):
         """Height in millimeters"""
         return self.cross_section[1]
     
+    @property
+    def length_mm(self) -> float:
+        """Length in millimeters (for FreeCAD)"""
+        return self.length * 1000.0
+    
     @abstractmethod
-    def get_parameters(self) -> Dict:
+    def get_freecad_parameters(self) -> Dict[str, float]:
         """
-        Return parameter dictionary for ML Stage 2.
+        Return parameter dictionary for FreeCAD spreadsheet.
         
         Each beam type defines its own parameter schema.
-        Must include at minimum: length, width, height
+        Values should be in millimeters and degrees (FreeCAD standard units).
         
         Returns:
-            Dictionary with all beam-specific parameters
+            Dictionary with all beam-specific parameters for FreeCAD template
         """
         pass
     
-    @abstractmethod
-    def get_mesh(self):
-        """
-        Generate 3D mesh representation of this beam.
-        
-        Returns:
-            trimesh.Trimesh object with beam geometry including joints
-        """
-        pass
-    
-    @abstractmethod
-    def _create_joint_geometry(self):
-        """
-        Create joint-specific geometry modifications.
-        Called internally by get_mesh().
-        
-        Each beam type implements its own joint logic.
-        """
-        pass
-    
-    def get_base_parameters(self) -> Dict:
+    def get_base_freecad_parameters(self) -> Dict[str, float]:
         """
         Return parameters common to all beam types.
         Subclasses should call this and extend with specific parameters.
+        
+        Returns:
+            Dict with length, width, height in mm
         """
         return {
+            'length': self.length_mm,
+            'width': self.width,
+            'height': self.height,
+        }
+    
+    def get_mesh(self):
+        """
+        Generate 3D mesh from FreeCAD template.
+        
+        Returns:
+            trimesh.Trimesh object in world coordinates
+        """
+        from core.freecad_utils import generate_mesh_from_template
+        from core.geometry_utils import apply_transform
+        
+        # Get mesh in local coordinates from FreeCAD template
+        local_mesh = generate_mesh_from_template(
+            template_path=self.freecad_template,
+            parameters=self.get_freecad_parameters()
+        )
+        
+        # Transform to world coordinates
+        world_mesh = apply_transform(local_mesh, self.position, self.orientation)
+        
+        return world_mesh
+    
+    def get_parameters(self) -> Dict:
+        """
+        Return parameters for ML Stage 2 (legacy compatibility).
+        
+        Returns:
+            Dictionary with all beam parameters
+        """
+        params = {
             'beam_id': self.beam_id,
             'beam_type': self.beam_type,
             'length': self.length,
             'width': self.width,
             'height': self.height,
             'position': self.position.tolist(),
-            'orientation_quaternion': [
-                self.orientation.as_quat()[0],
-                self.orientation.as_quat()[1],
-                self.orientation.as_quat()[2],
-                self.orientation.as_quat()[3]
-            ],
+            'orientation_quaternion': self.orientation.as_quat().tolist(),
             'wood_species': self.wood_species,
         }
-    
-    def transform_point(self, point: np.ndarray) -> np.ndarray:
-        """
-        Transform a point from beam local coordinates to world coordinates.
         
-        Args:
-            point: Point in beam-local coordinates (origin at beam center)
-            
-        Returns:
-            Point in world coordinates
-        """
-        return self.orientation.apply(point) + self.position
-    
-    def get_bounding_box(self) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Calculate axis-aligned bounding box.
+        # Add FreeCAD parameters
+        params.update(self.get_freecad_parameters())
         
-        Returns:
-            (min_corner, max_corner) in world coordinates
-        """
-        # Beam corners in local coordinates
-        hw, hh, hl = self.width_m/2, self.height_m/2, self.length/2
-        corners_local = np.array([
-            [-hw, -hh, -hl], [hw, -hh, -hl],
-            [-hw, hh, -hl],  [hw, hh, -hl],
-            [-hw, -hh, hl],  [hw, -hh, hl],
-            [-hw, hh, hl],   [hw, hh, hl],
-        ])
-        
-        # Transform to world coordinates
-        corners_world = np.array([self.transform_point(c) for c in corners_local])
-        
-        min_corner = corners_world.min(axis=0)
-        max_corner = corners_world.max(axis=0)
-        
-        return min_corner, max_corner
-    
-    def get_endpoints(self) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Get the two endpoints of the beam in world coordinates.
-        Assumes beam extends along local Z-axis.
-        
-        Returns:
-            (start_point, end_point) in world coordinates
-        """
-        half_length = self.length / 2
-        start_local = np.array([0, 0, -half_length])
-        end_local = np.array([0, 0, half_length])
-        
-        start_world = self.transform_point(start_local)
-        end_world = self.transform_point(end_local)
-        
-        return start_world, end_world
-    
-    def to_xml(self) -> ET.Element:
-        """
-        Serialize beam to XML element.
-        
-        Returns:
-            XML Element representing this beam
-        """
-        beam_elem = ET.Element('beam')
-        beam_elem.set('id', str(self.beam_id))
-        beam_elem.set('type', self.beam_type)
-        
-        # Position
-        pos_elem = ET.SubElement(beam_elem, 'position')
-        pos_elem.text = ','.join(map(str, self.position))
-        
-        # Orientation (as quaternion)
-        quat = self.orientation.as_quat()
-        orient_elem = ET.SubElement(beam_elem, 'orientation')
-        orient_elem.set('format', 'quaternion')
-        orient_elem.text = ','.join(map(str, quat))
-        
-        # Dimensions
-        dims_elem = ET.SubElement(beam_elem, 'dimensions')
-        dims_elem.set('length', str(self.length))
-        dims_elem.set('width', str(self.width))
-        dims_elem.set('height', str(self.height))
-        
-        # Material
-        material_elem = ET.SubElement(beam_elem, 'material')
-        material_elem.set('species', self.wood_species)
-        
-        # Parameters (beam-type specific)
-        params = self.get_parameters()
-        params_elem = ET.SubElement(beam_elem, 'parameters')
-        for key, value in params.items():
-            if key not in ['beam_id', 'beam_type', 'length', 'width', 'height', 
-                          'position', 'orientation_quaternion', 'wood_species']:
-                param_elem = ET.SubElement(params_elem, 'param')
-                param_elem.set('name', key)
-                param_elem.set('value', str(value))
-        
-        return beam_elem
-    
-    @classmethod
-    def from_xml(cls, element: ET.Element) -> 'BaseBeam':
-        """
-        Deserialize beam from XML element.
-        Must be implemented by concrete beam classes to instantiate correct type.
-        
-        Args:
-            element: XML Element containing beam data
-            
-        Returns:
-            Instantiated beam of correct type
-        """
-        raise NotImplementedError("Subclasses must implement from_xml()")
+        return params
     
     def __repr__(self) -> str:
         """String representation for debugging"""
         return (f"{self.beam_type}(id={self.beam_id}, "
                 f"length={self.length:.2f}m, "
-                f"cross_section={self.width}x{self.height}mm, "
-                f"pos={self.position})")
+                f"cross_section={self.width}x{self.height}mm)")
     
     def __str__(self) -> str:
         """Human-readable string"""

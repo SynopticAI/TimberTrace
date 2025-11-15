@@ -1,14 +1,17 @@
 """
-Beams Package - Timber Trace Simulator
+Beams Package - Timber Trace Simulator (FreeCAD Version)
 
 Contains all beam type classes for German timber roof construction.
+
+All beam classes:
+- Store parameters needed for FreeCAD templates
+- Generate meshes via FreeCAD headless execution
+- Use position-centric parameterization for alignment
 
 Beam Categories:
 - Sparren (rafters): Diagonal roof beams
 - Pfetten (purlins): Horizontal longitudinal support beams
 - Stuhlpfosten (posts): Vertical support columns
-- Streben (braces): Diagonal bracing elements
-- Kehlbalken (collar beams): Horizontal tie beams between rafters
 
 Usage:
     from beams import Pfettendach_Sparren, Firstpfette, Stuhlpfosten
@@ -17,11 +20,7 @@ Usage:
 from .base_beam import BaseBeam
 
 # Sparren (Rafters)
-from .sparren import (
-    Pfettendach_Sparren,
-    Sparrendach_Sparren,
-    Kehlbalkendach_Sparren
-)
+from .sparren import Pfettendach_Sparren
 
 # Pfetten (Purlins)
 from .pfetten import (
@@ -32,22 +31,15 @@ from .pfetten import (
 
 # Support Elements
 from .stuhlpfosten import Stuhlpfosten
-from .streben import Strebe
-from .kehlbalken import Kehlbalken
 
 
-# Beam registry for XML deserialization
-# Maps beam_type string to class
+# Beam registry for future use
 BEAM_CLASS_REGISTRY = {
     'Pfettendach_Sparren': Pfettendach_Sparren,
-    'Sparrendach_Sparren': Sparrendach_Sparren,
-    'Kehlbalkendach_Sparren': Kehlbalkendach_Sparren,
     'Firstpfette': Firstpfette,
     'Mittelpfette': Mittelpfette,
     'Fußpfette': Fußpfette,
     'Stuhlpfosten': Stuhlpfosten,
-    'Strebe': Strebe,
-    'Kehlbalken': Kehlbalken,
 }
 
 
@@ -76,8 +68,6 @@ __all__ = [
     
     # Sparren
     'Pfettendach_Sparren',
-    'Sparrendach_Sparren',
-    'Kehlbalkendach_Sparren',
     
     # Pfetten
     'Firstpfette',
@@ -86,8 +76,6 @@ __all__ = [
     
     # Support
     'Stuhlpfosten',
-    'Strebe',
-    'Kehlbalken',
     
     # Utilities
     'BEAM_CLASS_REGISTRY',
