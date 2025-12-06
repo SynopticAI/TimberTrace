@@ -18,13 +18,12 @@ if conda_prefix:
     freecad_lib = os.path.join(conda_prefix, 'Library', 'bin')
     sys.path.insert(0, freecad_lib)
 
-
 os.environ['QT_QPA_PLATFORM'] = 'offscreen'  # Headless mode
 
 import FreeCAD
 import Part
 import Mesh
-import MeshPart  # For converting Part shapes to meshes
+import MeshPart
 import trimesh
 import numpy as np
 from pathlib import Path
@@ -39,21 +38,13 @@ def generate_mesh_from_master(
     """
     Load master FreeCAD file, update parameters, export specific body.
     
-    Master file must have:
-    - Spreadsheet object named 'Parameters' with aliases
-    - Multiple PartDesign::Body objects (one for each beam type)
-    
     Args:
         master_file: Path to Master_Pfettendach.FCStd
         body_name: Name of Body object to export (e.g., "Mittelpfosten")
         param_updates: Dict of {spreadsheet_alias: new_value} (optional)
         
     Returns:
-        trimesh.Trimesh in template coordinates (before world positioning)
-        
-    Raises:
-        FileNotFoundError: If master file doesn't exist
-        ValueError: If required objects not found
+        trimesh.Trimesh in template coordinates
     """
     master_path = Path(master_file)
     if not master_path.exists():
@@ -61,17 +52,14 @@ def generate_mesh_from_master(
     
     # Open document
     doc = FreeCAD.openDocument(str(master_path))
-    doc.recompute()
     
     try:
         # Find spreadsheet
-        sheet = doc.getObject('Parameters')
-        if sheet is None:
-            # Try to find any spreadsheet
-            for obj in doc.Objects:
-                if obj.TypeId == 'Spreadsheet::Sheet':
-                    sheet = obj
-                    break
+        sheet = None
+        for obj in doc.Objects:
+            if obj.TypeId == 'Spreadsheet::Sheet':
+                sheet = obj
+                break
         
         if sheet is None:
             raise ValueError(f"No spreadsheet found in {master_path}")
@@ -79,9 +67,8 @@ def generate_mesh_from_master(
         # Update parameters if provided
         if param_updates:
             for alias, value in param_updates.items():
-                # Find cell with this alias
                 cell_found = False
-                for i in range(1, 100):  # Check first 100 rows
+                for i in range(1, 100):
                     for col in ['A', 'B', 'C', 'D', 'E', 'F']:
                         cell = f'{col}{i}'
                         try:
@@ -97,27 +84,51 @@ def generate_mesh_from_master(
                 if not cell_found:
                     print(f"Warning: Alias '{alias}' not found in spreadsheet")
         
-        # Recompute geometry
-        doc.recompute()
-        
-        # Find specific body by name
+        # Find body
         body = doc.getObject(body_name)
         if body is None or body.TypeId != 'PartDesign::Body':
-            # List available bodies for debugging
             available_bodies = [obj.Name for obj in doc.Objects 
                               if obj.TypeId == 'PartDesign::Body']
-            raise ValueError(f"Body '{body_name}' not found in {master_path}. "
-                           f"Available bodies: {available_bodies}")
+            raise ValueError(f"Body '{body_name}' not found. "
+                           f"Available: {available_bodies}")
         
-        # Convert shape to mesh using MeshPart
+        # CRITICAL FIX: Recompute AFTER finding body but BEFORE accessing shape
+        doc.recompute()
+        body.recompute()  # Recompute the body itself
+        
+        # Try to get shape - use Tip if available
+        shape = None
+        if hasattr(body, 'Tip') and body.Tip is not None:
+            print(f"   Using body.Tip.Shape for {body_name}")
+            shape = body.Tip.Shape
+        else:
+            print(f"   Using body.Shape for {body_name}")
+            shape = body.Shape
+        
+        # Check if shape is valid
+        if shape is None or shape.isNull():
+            # Debug: print body state
+            print(f"   Body state: {body.State}")
+            if hasattr(body, 'Group'):
+                print(f"   Body features: {[f.Name for f in body.Group]}")
+            raise ValueError(f"Body '{body_name}' has no valid shape. "
+                           f"Check FreeCAD file for errors.")
+        
+        print(f"   Shape valid: {not shape.isNull()}, BoundBox: {shape.BoundBox}")
+        
+        # Convert to mesh
         mesh_obj = MeshPart.meshFromShape(
-            Shape=body.Shape,
-            LinearDeflection=0.1,  # 0.1mm tolerance
-            AngularDeflection=0.5,  # degrees
+            Shape=shape,
+            LinearDeflection=0.1,
+            AngularDeflection=0.5,
             Relative=False
         )
         
-        # Convert to numpy arrays
+        # Check if mesh is empty
+        if len(mesh_obj.Points) == 0:
+            raise ValueError(f"Mesh tessellation produced 0 points for {body_name}")
+        
+        # Convert to numpy
         vertices = np.array([[p.x, p.y, p.z] for p in mesh_obj.Points])
         faces = np.array([[f.PointIndices[0], f.PointIndices[1], f.PointIndices[2]] 
                          for f in mesh_obj.Facets])
@@ -125,34 +136,21 @@ def generate_mesh_from_master(
         # Create trimesh
         mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
         
+        print(f"   ✓ Created mesh: {len(vertices)} verts, {len(faces)} faces")
+        
         return mesh
         
     finally:
-        # Always close document
         FreeCAD.closeDocument(doc.Name)
 
 
 def export_shape_to_stl(shape: Part.Shape, output_path: str) -> None:
-    """
-    Export FreeCAD shape directly to STL file.
-    
-    Args:
-        shape: FreeCAD Part.Shape object
-        output_path: Where to save the STL file
-    """
+    """Export FreeCAD shape directly to STL file."""
     shape.exportStl(output_path)
 
 
 def list_bodies_in_master(master_file: str) -> list:
-    """
-    List all Body objects in master file for debugging.
-    
-    Args:
-        master_file: Path to Master_Pfettendach.FCStd
-        
-    Returns:
-        List of body names
-    """
+    """List all Body objects in master file."""
     master_path = Path(master_file)
     if not master_path.exists():
         raise FileNotFoundError(f"Master file not found: {master_path}")
@@ -160,7 +158,7 @@ def list_bodies_in_master(master_file: str) -> list:
     doc = FreeCAD.openDocument(str(master_path))
     
     try:
-        bodies = [obj.Name for obj in doc.Objects 
+        bodies = [(obj.Name, obj.Label) for obj in doc.Objects 
                  if obj.TypeId == 'PartDesign::Body']
         return bodies
     finally:
@@ -168,15 +166,7 @@ def list_bodies_in_master(master_file: str) -> list:
 
 
 def list_spreadsheet_aliases(master_file: str) -> dict:
-    """
-    List all spreadsheet aliases in master file for debugging.
-    
-    Args:
-        master_file: Path to Master_Pfettendach.FCStd
-        
-    Returns:
-        Dict of {alias: value}
-    """
+    """List all spreadsheet aliases in master file."""
     master_path = Path(master_file)
     if not master_path.exists():
         raise FileNotFoundError(f"Master file not found: {master_path}")
@@ -184,12 +174,11 @@ def list_spreadsheet_aliases(master_file: str) -> dict:
     doc = FreeCAD.openDocument(str(master_path))
     
     try:
-        sheet = doc.getObject('Parameters')
-        if sheet is None:
-            for obj in doc.Objects:
-                if obj.TypeId == 'Spreadsheet::Sheet':
-                    sheet = obj
-                    break
+        sheet = None
+        for obj in doc.Objects:
+            if obj.TypeId == 'Spreadsheet::Sheet':
+                sheet = obj
+                break
         
         if sheet is None:
             return {}
@@ -211,57 +200,98 @@ def list_spreadsheet_aliases(master_file: str) -> dict:
         FreeCAD.closeDocument(doc.Name)
 
 
-# Test function
+def debug_body_features(master_file: str, body_name: str):
+    """Debug helper to inspect body features."""
+    doc = FreeCAD.openDocument(master_file)
+    
+    try:
+        body = doc.getObject(body_name)
+        if body is None:
+            print(f"Body {body_name} not found!")
+            return
+        
+        print(f"\n🔍 Debugging Body: {body_name}")
+        print(f"   Type: {body.TypeId}")
+        print(f"   Label: {body.Label}")
+        print(f"   State: {body.State}")
+        
+        if hasattr(body, 'Group'):
+            print(f"   Features in body:")
+            for feat in body.Group:
+                print(f"     - {feat.Name} ({feat.TypeId})")
+                if hasattr(feat, 'Shape'):
+                    try:
+                        print(f"       Shape valid: {not feat.Shape.isNull()}")
+                    except:
+                        print(f"       Shape: Error accessing")
+        
+        if hasattr(body, 'Tip'):
+            print(f"   Tip: {body.Tip}")
+            if body.Tip:
+                print(f"   Tip Shape valid: {not body.Tip.Shape.isNull()}")
+        
+        print(f"   Body.Shape valid: {not body.Shape.isNull()}")
+        
+    finally:
+        FreeCAD.closeDocument(doc.Name)
+
+
 def test_master_file_workflow():
-    """Test master file workflow (requires actual master file)"""
+    """Test master file workflow."""
     print("=" * 60)
     print("Testing Master File Workflow")
     print("=" * 60)
     
-    # This test requires an actual Master_Pfettendach.FCStd file
     master_file = "freecad_templates/Master_Pfettendach.FCStd"
     
     if not Path(master_file).exists():
         print(f"\n⚠ Master file not found: {master_file}")
-        print("  Create the master file first to run this test.")
         return
     
     print(f"\n1. Listing bodies in master file...")
     bodies = list_bodies_in_master(master_file)
     print(f"   Found {len(bodies)} bodies:")
-    for body in bodies:
-        print(f"     - {body}")
+    for name, label in bodies:
+        print(f"     - {name} (Label: {label})")
     
     print(f"\n2. Listing spreadsheet aliases...")
     aliases = list_spreadsheet_aliases(master_file)
     print(f"   Found {len(aliases)} aliases:")
-    for alias, value in list(aliases.items())[:10]:  # Show first 10
+    for alias, value in list(aliases.items())[:10]:
         print(f"     {alias}: {value}")
     
-    if bodies:
-        print(f"\n3. Generating mesh from first body: {bodies[0]}...")
+    # TEST WITH ACTUAL BEAM BODIES (skip empty "Body")
+    test_bodies = ['Body002', 'Body006']  # Firstpfette, Mittelpfosten
+    
+    for body_name in test_bodies:
+        print(f"\n3. Testing body: {body_name}...")
+        debug_body_features(master_file, body_name)
+        
+        print(f"\n4. Generating mesh from {body_name}...")
         try:
             mesh = generate_mesh_from_master(
                 master_file=master_file,
-                body_name=bodies[0],
-                param_updates=None  # Use default values
+                body_name=body_name,
+                param_updates=None
             )
             
             print(f"   ✓ Mesh generated successfully")
             print(f"     Vertices: {len(mesh.vertices)}")
             print(f"     Faces: {len(mesh.faces)}")
             print(f"     Volume: {mesh.volume:.2f} mm³")
+            print(f"     Bounds: {mesh.bounds}")
             
             # Export test
-            output_path = "/tmp/test_master_workflow.stl"
+            output_path = f"/tmp/test_{body_name}.stl"
             mesh.export(output_path)
             print(f"   ✓ Exported to {output_path}")
             
         except Exception as e:
             print(f"   ✗ Error: {e}")
+            import traceback
+            traceback.print_exc()
     
     print("\n✓ Test complete!")
-
 
 if __name__ == "__main__":
     test_master_file_workflow()
