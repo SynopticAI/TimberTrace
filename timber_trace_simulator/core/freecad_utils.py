@@ -1,10 +1,24 @@
 """
 FreeCAD Utilities for Timber Trace Simulator
 
-Headless FreeCAD execution for template-based geometry generation.
+Headless FreeCAD execution for master file-based geometry generation.
 """
 
+import sys
 import os
+
+# Add project to path
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(script_dir)
+sys.path.insert(0, project_root)
+
+# Find FreeCAD installation
+conda_prefix = os.environ.get('CONDA_PREFIX')
+if conda_prefix:
+    freecad_lib = os.path.join(conda_prefix, 'Library', 'bin')
+    sys.path.insert(0, freecad_lib)
+
+
 os.environ['QT_QPA_PLATFORM'] = 'offscreen'  # Headless mode
 
 import FreeCAD
@@ -17,34 +31,37 @@ from pathlib import Path
 from typing import Dict, Optional
 
 
-def generate_mesh_from_template(
-    template_path: str,
-    parameters: Dict[str, float]
+def generate_mesh_from_master(
+    master_file: str,
+    body_name: str,
+    param_updates: Optional[Dict[str, float]] = None
 ) -> trimesh.Trimesh:
     """
-    Load FreeCAD template, set parameters, export mesh.
+    Load master FreeCAD file, update parameters, export specific body.
     
-    Template must have:
+    Master file must have:
     - Spreadsheet object named 'Parameters' with aliases
-    - PartDesign::Body object containing the geometry
+    - Multiple PartDesign::Body objects (one for each beam type)
     
     Args:
-        template_path: Path to .FCStd template file
-        parameters: Dict of {alias: value} for spreadsheet
+        master_file: Path to Master_Pfettendach.FCStd
+        body_name: Name of Body object to export (e.g., "Mittelpfosten")
+        param_updates: Dict of {spreadsheet_alias: new_value} (optional)
         
     Returns:
-        trimesh.Trimesh object (in template coordinates)
+        trimesh.Trimesh in template coordinates (before world positioning)
         
     Raises:
-        FileNotFoundError: If template doesn't exist
+        FileNotFoundError: If master file doesn't exist
         ValueError: If required objects not found
     """
-    template_path = Path(template_path)
-    if not template_path.exists():
-        raise FileNotFoundError(f"Template not found: {template_path}")
+    master_path = Path(master_file)
+    if not master_path.exists():
+        raise FileNotFoundError(f"Master file not found: {master_path}")
     
     # Open document
-    doc = FreeCAD.openDocument(str(template_path))
+    doc = FreeCAD.openDocument(str(master_path))
+    doc.recompute()
     
     try:
         # Find spreadsheet
@@ -57,37 +74,42 @@ def generate_mesh_from_template(
                     break
         
         if sheet is None:
-            raise ValueError(f"No spreadsheet found in {template_path}")
+            raise ValueError(f"No spreadsheet found in {master_path}")
         
-        # Set parameters
-        for alias, value in parameters.items():
-            # Find cell with this alias
-            for i in range(1, 100):  # Check first 100 rows
-                for col in ['A', 'B', 'C', 'D']:
-                    cell = f'{col}{i}'
-                    try:
-                        if sheet.getAlias(cell) == alias:
-                            sheet.set(cell, str(value))
-                            break
-                    except:
-                        continue
+        # Update parameters if provided
+        if param_updates:
+            for alias, value in param_updates.items():
+                # Find cell with this alias
+                cell_found = False
+                for i in range(1, 100):  # Check first 100 rows
+                    for col in ['A', 'B', 'C', 'D', 'E', 'F']:
+                        cell = f'{col}{i}'
+                        try:
+                            if sheet.getAlias(cell) == alias:
+                                sheet.set(cell, str(value))
+                                cell_found = True
+                                break
+                        except:
+                            continue
+                    if cell_found:
+                        break
+                
+                if not cell_found:
+                    print(f"Warning: Alias '{alias}' not found in spreadsheet")
         
         # Recompute geometry
         doc.recompute()
         
-        # Find body
-        body = doc.getObject('Body')
-        if body is None:
-            # Try to find any body
-            for obj in doc.Objects:
-                if obj.TypeId == 'PartDesign::Body':
-                    body = obj
-                    break
+        # Find specific body by name
+        body = doc.getObject(body_name)
+        if body is None or body.TypeId != 'PartDesign::Body':
+            # List available bodies for debugging
+            available_bodies = [obj.Name for obj in doc.Objects 
+                              if obj.TypeId == 'PartDesign::Body']
+            raise ValueError(f"Body '{body_name}' not found in {master_path}. "
+                           f"Available bodies: {available_bodies}")
         
-        if body is None:
-            raise ValueError(f"No Body found in {template_path}")
-        
-        # Convert shape to mesh using MeshPart (FIXED!)
+        # Convert shape to mesh using MeshPart
         mesh_obj = MeshPart.meshFromShape(
             Shape=body.Shape,
             LinearDeflection=0.1,  # 0.1mm tolerance
@@ -114,8 +136,6 @@ def export_shape_to_stl(shape: Part.Shape, output_path: str) -> None:
     """
     Export FreeCAD shape directly to STL file.
     
-    This is an alternative to generating trimesh - useful for direct exports.
-    
     Args:
         shape: FreeCAD Part.Shape object
         output_path: Where to save the STL file
@@ -123,95 +143,125 @@ def export_shape_to_stl(shape: Part.Shape, output_path: str) -> None:
     shape.exportStl(output_path)
 
 
-def create_simple_template(
-    output_path: str,
-    length: float = 1000.0,
-    width: float = 200.0,
-    height: float = 300.0
-) -> None:
+def list_bodies_in_master(master_file: str) -> list:
     """
-    Create a simple box template for testing.
+    List all Body objects in master file for debugging.
     
     Args:
-        output_path: Where to save .FCStd file
-        length: Box length in mm
-        width: Box width in mm
-        height: Box height in mm
+        master_file: Path to Master_Pfettendach.FCStd
+        
+    Returns:
+        List of body names
     """
-    doc = FreeCAD.newDocument("SimpleTemplate")
+    master_path = Path(master_file)
+    if not master_path.exists():
+        raise FileNotFoundError(f"Master file not found: {master_path}")
     
-    # Create spreadsheet
-    sheet = doc.addObject('Spreadsheet::Sheet', 'Parameters')
-    sheet.set('A1', 'length')
-    sheet.set('B1', str(length))
-    sheet.setAlias('B1', 'length')
+    doc = FreeCAD.openDocument(str(master_path))
     
-    sheet.set('A2', 'width')
-    sheet.set('B2', str(width))
-    sheet.setAlias('B2', 'width')
+    try:
+        bodies = [obj.Name for obj in doc.Objects 
+                 if obj.TypeId == 'PartDesign::Body']
+        return bodies
+    finally:
+        FreeCAD.closeDocument(doc.Name)
+
+
+def list_spreadsheet_aliases(master_file: str) -> dict:
+    """
+    List all spreadsheet aliases in master file for debugging.
     
-    sheet.set('A3', 'height')
-    sheet.set('B3', str(height))
-    sheet.setAlias('B3', 'height')
+    Args:
+        master_file: Path to Master_Pfettendach.FCStd
+        
+    Returns:
+        Dict of {alias: value}
+    """
+    master_path = Path(master_file)
+    if not master_path.exists():
+        raise FileNotFoundError(f"Master file not found: {master_path}")
     
-    # Create body
-    body = doc.addObject('PartDesign::Body', 'Body')
-    box = body.newObject('PartDesign::AdditiveBox', 'Box')
-    box.setExpression('Length', 'Parameters.length')
-    box.setExpression('Width', 'Parameters.width')
-    box.setExpression('Height', 'Parameters.height')
+    doc = FreeCAD.openDocument(str(master_path))
     
-    doc.recompute()
-    
-    # Save
-    doc.saveAs(output_path)
-    FreeCAD.closeDocument(doc.Name)
-    
-    print(f"✓ Created simple template: {output_path}")
+    try:
+        sheet = doc.getObject('Parameters')
+        if sheet is None:
+            for obj in doc.Objects:
+                if obj.TypeId == 'Spreadsheet::Sheet':
+                    sheet = obj
+                    break
+        
+        if sheet is None:
+            return {}
+        
+        aliases = {}
+        for i in range(1, 100):
+            for col in ['A', 'B', 'C', 'D', 'E', 'F']:
+                cell = f'{col}{i}'
+                try:
+                    alias = sheet.getAlias(cell)
+                    if alias:
+                        value = sheet.get(cell)
+                        aliases[alias] = value
+                except:
+                    continue
+        
+        return aliases
+    finally:
+        FreeCAD.closeDocument(doc.Name)
 
 
 # Test function
-def test_freecad_utils():
-    """Run self-test"""
+def test_master_file_workflow():
+    """Test master file workflow (requires actual master file)"""
     print("=" * 60)
-    print("Testing freecad_utils.py (CORRECTED VERSION)")
+    print("Testing Master File Workflow")
     print("=" * 60)
     
-    # Create test template
-    test_template = "/tmp/test_simple_template.FCStd"
-    print("\n1. Creating test template...")
-    create_simple_template(test_template, length=2000, width=400, height=600)
+    # This test requires an actual Master_Pfettendach.FCStd file
+    master_file = "freecad_templates/Master_Pfettendach.FCStd"
     
-    # Load and modify
-    print("\n2. Loading template with new parameters...")
-    mesh = generate_mesh_from_template(
-        test_template,
-        {'length': 3000, 'width': 600, 'height': 900}
-    )
+    if not Path(master_file).exists():
+        print(f"\n⚠ Master file not found: {master_file}")
+        print("  Create the master file first to run this test.")
+        return
     
-    print(f"   ✓ Generated mesh")
-    print(f"     Vertices: {len(mesh.vertices)}")
-    print(f"     Faces: {len(mesh.faces)}")
-    print(f"     Volume: {mesh.volume:.2f} mm³")
+    print(f"\n1. Listing bodies in master file...")
+    bodies = list_bodies_in_master(master_file)
+    print(f"   Found {len(bodies)} bodies:")
+    for body in bodies:
+        print(f"     - {body}")
     
-    expected_volume = 3000 * 600 * 900
-    print(f"     Expected volume: {expected_volume:.2f} mm³")
+    print(f"\n2. Listing spreadsheet aliases...")
+    aliases = list_spreadsheet_aliases(master_file)
+    print(f"   Found {len(aliases)} aliases:")
+    for alias, value in list(aliases.items())[:10]:  # Show first 10
+        print(f"     {alias}: {value}")
     
-    # Export
-    output_stl = "/tmp/test_utils_output.stl"
-    mesh.export(output_stl)
-    print(f"   ✓ Exported to {output_stl}")
+    if bodies:
+        print(f"\n3. Generating mesh from first body: {bodies[0]}...")
+        try:
+            mesh = generate_mesh_from_master(
+                master_file=master_file,
+                body_name=bodies[0],
+                param_updates=None  # Use default values
+            )
+            
+            print(f"   ✓ Mesh generated successfully")
+            print(f"     Vertices: {len(mesh.vertices)}")
+            print(f"     Faces: {len(mesh.faces)}")
+            print(f"     Volume: {mesh.volume:.2f} mm³")
+            
+            # Export test
+            output_path = "/tmp/test_master_workflow.stl"
+            mesh.export(output_path)
+            print(f"   ✓ Exported to {output_path}")
+            
+        except Exception as e:
+            print(f"   ✗ Error: {e}")
     
-    # Verify with reload
-    loaded = trimesh.load(output_stl)
-    print(f"   ✓ Reloaded successfully")
-    print(f"     Reloaded volume: {loaded.volume:.2f} mm³")
-    
-    print("\n✓ ALL TESTS PASSED - MESH EXPORT FIXED!")
-    print(f"\nFiles created:")
-    print(f"  Template: {test_template}")
-    print(f"  Output: {output_stl}")
+    print("\n✓ Test complete!")
 
 
 if __name__ == "__main__":
-    test_freecad_utils()
+    test_master_file_workflow()
