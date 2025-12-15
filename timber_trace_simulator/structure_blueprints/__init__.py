@@ -1,0 +1,11 @@
+# structure_blueprints/__init__.py
+"""
+Blueprint definitions for different timber structures.
+
+Blueprints define TOPOLOGY (which beams connect and how) and provide
+rough initial parameters. The constraint solver enforces geometric validity.
+"""
+
+from .simple_structures import post_and_beam
+
+__all__ = ['post_and_beam']

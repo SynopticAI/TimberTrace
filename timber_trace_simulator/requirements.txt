@@ -1,0 +1,18 @@
+# Core dependencies
+numpy>=1.24.0
+cvxpy>=1.4.0
+clarabel>=0.6.0  # Solver backend for CVXPY
+
+# Visualization
+flask>=3.0.0
+
+# 3D geometry and CAD (optional but recommended)
+build123d>=0.5.0
+trimesh>=4.0.0
+
+# Progress bars
+tqdm>=4.65.0
+
+# For future ML training (not needed for data generation)
+# torch>=2.0.0
+# pointcept  # Custom installation required
