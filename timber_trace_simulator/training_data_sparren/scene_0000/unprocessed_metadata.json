@@ -1,0 +1,159 @@
+{
+  "scene_id": 0,
+  "status": "unprocessed",
+  "num_beams": 5,
+  "beams": [
+    {
+      "beam_id": 0,
+      "beam_type": "Pfosten",
+      "stl_file": "unprocessed_beam_00.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 1.43,
+        "y": -1.5,
+        "z": 0.0,
+        "width": 0.10122033759818312,
+        "depth": 0.10537973415931048,
+        "height": 2.2411053504286578
+      }
+    },
+    {
+      "beam_id": 1,
+      "beam_type": "Pfosten",
+      "stl_file": "unprocessed_beam_01.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 1.43,
+        "y": 1.5,
+        "z": 0.0,
+        "width": 0.10112207957492243,
+        "depth": 0.09809136998347262,
+        "height": 2.2583576452266625
+      }
+    },
+    {
+      "beam_id": 2,
+      "beam_type": "Pfette",
+      "stl_file": "unprocessed_beam_02.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 1.43,
+        "y": 0.0,
+        "z": 2.2,
+        "length": 3.9126220957677695,
+        "width": 0.14861900601720576,
+        "height": 0.1739098828150309
+      }
+    },
+    {
+      "beam_id": 3,
+      "beam_type": "Sparren",
+      "stl_file": "unprocessed_beam_03.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 0.0,
+        "y": -0.5,
+        "z": 3.9700000000000006,
+        "width": 0.09825162278238667,
+        "height": 0.1658345007616533,
+        "projected_length": 3.526005427777614,
+        "steepness": 1.0,
+        "notch_x_mittel": 1.5578378769298424,
+        "notch_mittel_depth": 0.05,
+        "notch_x_fuss": 3.161757142548762,
+        "notch_fuss_depth": 0.05,
+        "notch_top_length": 0.06069662261890491,
+        "notch_top_cut_depth": 0.0
+      }
+    },
+    {
+      "beam_id": 4,
+      "beam_type": "Sparren",
+      "stl_file": "unprocessed_beam_04.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 0.0,
+        "y": 0.5,
+        "z": 3.9700000000000006,
+        "width": 0.09380693949552311,
+        "height": 0.15040436794880652,
+        "projected_length": 3.799357860993144,
+        "steepness": 1.0,
+        "notch_x_mittel": 1.7364332383073728,
+        "notch_mittel_depth": 0.05,
+        "notch_x_fuss": 3.114510326009796,
+        "notch_fuss_depth": 0.05,
+        "notch_top_length": 0.10153782540047439,
+        "notch_top_cut_depth": 0.0
+      }
+    }
+  ],
+  "connectivity": {
+    "top": [
+      [
+        0,
+        2,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        1,
+        2,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        2,
+        3,
+        4,
+        5,
+        0,
+        1
+      ],
+      [
+        2,
+        4,
+        4,
+        5,
+        0,
+        1
+      ]
+    ],
+    "bottom": [],
+    "left": [],
+    "right": [
+      [
+        2,
+        3,
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        2,
+        4,
+        0,
+        1,
+        0,
+        1
+      ]
+    ],
+    "front": [],
+    "back": []
+  },
+  "identity_pairs": [
+    [
+      0,
+      1
+    ],
+    [
+      3,
+      4
+    ]
+  ]
+}

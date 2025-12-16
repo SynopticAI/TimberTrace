@@ -1,0 +1,255 @@
+{
+  "scene_id": 0,
+  "status": "unprocessed",
+  "num_beams": 7,
+  "beams": [
+    {
+      "beam_id": 0,
+      "beam_type": "Pfosten",
+      "stl_file": "unprocessed_beam_00.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 1.43,
+        "y": -1.5,
+        "z": 0.0,
+        "width": 0.10122033759818312,
+        "depth": 0.10537973415931048,
+        "height": 2.2411053504286578
+      }
+    },
+    {
+      "beam_id": 1,
+      "beam_type": "Pfosten",
+      "stl_file": "unprocessed_beam_01.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 1.43,
+        "y": 1.5,
+        "z": 0.0,
+        "width": 0.10112207957492243,
+        "depth": 0.09809136998347262,
+        "height": 2.2583576452266625
+      }
+    },
+    {
+      "beam_id": 2,
+      "beam_type": "Pfette",
+      "stl_file": "unprocessed_beam_02.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 0.009999999999999995,
+        "y": 0.0,
+        "z": 3.6500000000000004,
+        "length": 3.9126220957677695,
+        "width": 0.14861900601720576,
+        "height": 0.1739098828150309
+      }
+    },
+    {
+      "beam_id": 3,
+      "beam_type": "Pfette",
+      "stl_file": "unprocessed_beam_03.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 1.43,
+        "y": 0.0,
+        "z": 2.2,
+        "length": 3.8368181263560888,
+        "width": 0.14641795083781864,
+        "height": 0.16086684759258713
+      }
+    },
+    {
+      "beam_id": 4,
+      "beam_type": "Pfette",
+      "stl_file": "unprocessed_beam_04.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 2.73,
+        "y": 0.0,
+        "z": 0.9000000000000009,
+        "length": 4.095262385531505,
+        "width": 0.14936312604243857,
+        "height": 0.14713108174593661
+      }
+    },
+    {
+      "beam_id": 5,
+      "beam_type": "Sparren",
+      "stl_file": "unprocessed_beam_05.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 0.0,
+        "y": -0.5,
+        "z": 3.9700000000000006,
+        "width": 0.09380693949552311,
+        "height": 0.15040436794880652,
+        "projected_length": 4.299357860993144,
+        "steepness": 1.0,
+        "notch_x_mittel": 1.7364332383073728,
+        "notch_mittel_depth": 0.05,
+        "notch_x_fuss": 3.114510326009796,
+        "notch_fuss_depth": 0.05,
+        "notch_top_length": 0.10153782540047439,
+        "notch_top_cut_depth": 0.0
+      }
+    },
+    {
+      "beam_id": 6,
+      "beam_type": "Sparren",
+      "stl_file": "unprocessed_beam_06.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 0.0,
+        "y": 0.5,
+        "z": 3.9700000000000006,
+        "width": 0.10448737846325086,
+        "height": 0.15922958724505865,
+        "projected_length": 4.2524762586578095,
+        "steepness": 1.0,
+        "notch_x_mittel": 1.1755332619885932,
+        "notch_mittel_depth": 0.05,
+        "notch_x_fuss": 2.9189328681283953,
+        "notch_fuss_depth": 0.05,
+        "notch_top_length": 0.06395089793340708,
+        "notch_top_cut_depth": 0.0
+      }
+    }
+  ],
+  "connectivity": {
+    "top": [
+      [
+        0,
+        3,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        1,
+        3,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        2,
+        5,
+        4,
+        5,
+        0,
+        2
+      ],
+      [
+        3,
+        5,
+        4,
+        5,
+        0,
+        1
+      ],
+      [
+        4,
+        5,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        2,
+        6,
+        4,
+        5,
+        0,
+        2
+      ],
+      [
+        3,
+        6,
+        4,
+        5,
+        0,
+        1
+      ],
+      [
+        4,
+        6,
+        4,
+        5,
+        0,
+        0
+      ]
+    ],
+    "bottom": [],
+    "left": [],
+    "right": [
+      [
+        2,
+        5,
+        0,
+        1,
+        0,
+        2
+      ],
+      [
+        3,
+        5,
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        4,
+        5,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        2,
+        6,
+        0,
+        1,
+        0,
+        2
+      ],
+      [
+        3,
+        6,
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        4,
+        6,
+        0,
+        1,
+        0,
+        0
+      ]
+    ],
+    "front": [],
+    "back": []
+  },
+  "identity_pairs": [
+    [
+      0,
+      1
+    ],
+    [
+      5,
+      6
+    ],
+    [
+      2,
+      4
+    ]
+  ]
+}

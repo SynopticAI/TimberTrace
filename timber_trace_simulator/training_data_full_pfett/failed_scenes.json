@@ -1,0 +1,22 @@
+[
+  {
+    "scene_id": 0,
+    "error": "'list' object has no attribute 'slack_count'"
+  },
+  {
+    "scene_id": 1,
+    "error": "'list' object has no attribute 'slack_count'"
+  },
+  {
+    "scene_id": 2,
+    "error": "'list' object has no attribute 'slack_count'"
+  },
+  {
+    "scene_id": 3,
+    "error": "'list' object has no attribute 'slack_count'"
+  },
+  {
+    "scene_id": 4,
+    "error": "'list' object has no attribute 'slack_count'"
+  }
+]

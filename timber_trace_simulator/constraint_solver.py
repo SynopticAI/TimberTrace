@@ -27,6 +27,8 @@ class SolverError(Exception):
 def solve_constraints(beams: List[BeamBase], 
                      topology: Dict,
                      max_adjustment: float = 0.5,
+                     morphology_weight: float = 1000.0,
+                     constraint_weight: float = 1e7,
                      verbose: bool = False) -> List[BeamBase]:
     """
     Solve QP to enforce contact and identity constraints.
@@ -86,11 +88,14 @@ def solve_constraints(beams: List[BeamBase],
         print(f"   Variables created: {sum(len(v) for v in cvxpy_vars_list)} total")
     
     # =========================================================================
-    # STEP 2: Build contact constraints
+    # STEP 2: Build contact constraints (Relaxed with Penalties)
     # =========================================================================
     constraints = []
     slack_vars = {}
     slack_counter = 0
+    
+    # Store violation variables to add to objective later: [(vx, vy, vz, debug_name), ...]
+    violation_vars = []
     
     connectivity = topology.get('connectivity', {})
     
@@ -108,45 +113,47 @@ def solve_constraints(beams: List[BeamBase],
             eq_i = beam_i.get_constraints(face_i, constr_idx_i)
             eq_j = beam_j.get_constraints(face_j, constr_idx_j)
             
-            # Create slack variables for this constraint pair
-            # Each constraint pair gets its own set of slacks
-            # We need to map local slack names (slack_0, slack_1, ...) to unique global vars
-            num_slacks_needed = max(eq_i.slack_count, eq_j.slack_count)
-            
-            pair_slacks = {}
-            for s in range(num_slacks_needed):
-                # Create mapping: local name -> global CVXPY variable
-                local_slack_name = f"slack_{s}"
-                global_slack_var = cp.Variable()
-                pair_slacks[local_slack_name] = global_slack_var
-                slack_vars[f"slack_{slack_counter}"] = global_slack_var  # Track globally
+            # --- CORRECTION: DECOUPLED SLACK VARIABLES ---
+            # Create separate slack variables for Beam I
+            slacks_i = {}
+            for s in range(eq_i.slack_count):
+                global_var = cp.Variable()
+                # Map local name (e.g., "slack_0") to a unique, independent CVXPY variable
+                slacks_i[f"slack_{s}"] = global_var 
+                # Keep track globally for debugging
+                slack_vars[f"slack_{slack_counter}"] = global_var
+                slack_counter += 1
+
+            # Create separate slack variables for Beam J
+            slacks_j = {}
+            for s in range(eq_j.slack_count):
+                global_var = cp.Variable()
+                slacks_j[f"slack_{s}"] = global_var 
+                slack_vars[f"slack_{slack_counter}"] = global_var
                 slack_counter += 1
             
-            # Evaluate constraint equations in CVXPY mode
-            # Beam i point
-            p_i = _evaluate_constraint_point(
-                eq_i, 
-                beam_i, 
-                cvxpy_vars_list[beam_i_idx],
-                pair_slacks  # Pass local slack mapping
-            )
+            # Evaluate points using INDEPENDENT slack dictionaries
+            # This allows Beam I's point to move independently along its surface
+            # to match Beam J's point on its surface.
+            p_i = _evaluate_constraint_point(eq_i, beam_i, cvxpy_vars_list[beam_i_idx], slacks_i)
+            p_j = _evaluate_constraint_point(eq_j, beam_j, cvxpy_vars_list[beam_j_idx], slacks_j)
             
-            # Beam j point
-            p_j = _evaluate_constraint_point(
-                eq_j,
-                beam_j,
-                cvxpy_vars_list[beam_j_idx],
-                pair_slacks  # Same slack mapping (they share slacks)
-            )
+            # --- SOFT CONSTRAINT CHANGE ---
+            # Instead of p_i == p_j, we allow a small violation 'v'
+            # p_i - p_j == v   (Minimize v^2)
             
-            # Add equality constraints (one per dimension)
-            constraints.append(p_i[0] == p_j[0])  # X
-            constraints.append(p_i[1] == p_j[1])  # Y
-            constraints.append(p_i[2] == p_j[2])  # Z
-    
-    if verbose:
-        print(f"   Contact constraints: {len(constraints)}")
-        print(f"   Slack variables: {len(slack_vars)}")
+            v_x = cp.Variable()
+            v_y = cp.Variable()
+            v_z = cp.Variable()
+            
+            # Track for objective function and debugging
+            debug_info = f"{face_name.upper()}: Beam {beam_i_idx} ({type(beam_i).__name__}) <-> Beam {beam_j_idx} ({type(beam_j).__name__})"
+            violation_vars.append((v_x, v_y, v_z, debug_info))
+            
+            # Add relaxed constraints
+            constraints.append(p_i[0] - p_j[0] == v_x)
+            constraints.append(p_i[1] - p_j[1] == v_y)
+            constraints.append(p_i[2] - p_j[2] == v_z)
     
     # =========================================================================
     # STEP 3: Add identity constraints (morphology only)
@@ -175,6 +182,37 @@ def solve_constraints(beams: List[BeamBase],
         print(f"   Identity pairs: {len(identity_pairs)}")
     
     # =========================================================================
+    # STEP 3.5: Add Inequality Constraints (Safety Rules)
+    # =========================================================================
+    for beam_idx, beam in enumerate(beams):
+        safety_rules = beam.get_inequality_constraints()
+        
+        # We need the variables for this specific beam
+        beam_vars = cvxpy_vars_list[beam_idx]
+        
+        # We also need the current parameter values (for constants in expressions)
+        # and we pass the CVXPY variables so they are used in the expression
+        beam_params_dict = beam.get_parameters()['values']
+        
+        for lhs_str, rhs_str in safety_rules:
+            # Evaluate Left Hand Side (LHS) -> CVXPY Expression
+            lhs_expr = evaluate_expression(
+                lhs_str, 
+                beam_params_dict, 
+                cvxpy_vars=beam_vars
+            )
+            
+            # Evaluate Right Hand Side (RHS) -> CVXPY Expression
+            rhs_expr = evaluate_expression(
+                rhs_str, 
+                beam_params_dict, 
+                cvxpy_vars=beam_vars
+            )
+            
+            # Add constraint: LHS <= RHS
+            constraints.append(lhs_expr <= rhs_expr)
+
+    # =========================================================================
     # STEP 4: Add parameter bounds
     # =========================================================================
     for beam_idx, beam in enumerate(beams):
@@ -198,10 +236,23 @@ def solve_constraints(beams: List[BeamBase],
         for param_name, var in vars_dict.items():
             initial_val = initial_params[param_name]
             
+            # Apply weights: Position changes are cheap, Morphology changes are expensive
+            if param_name in ['x', 'y', 'z']:
+                weight = 1.0
+            else:
+                weight = morphology_weight
+            
             # Squared deviation with max_adjustment clipping
             deviation = var - initial_val
-            objective_terms.append(cp.square(deviation))
+            objective_terms.append(weight * cp.square(deviation))   
     
+    # Add heavy penalties for constraint violations
+    for vx, vy, vz, _ in violation_vars:
+        # Heavily penalize any gap between connected parts
+        objective_terms.append(constraint_weight * cp.square(vx))
+        objective_terms.append(constraint_weight * cp.square(vy))
+        objective_terms.append(constraint_weight * cp.square(vz))
+
     objective = cp.Minimize(cp.sum(objective_terms))
     
     # =========================================================================

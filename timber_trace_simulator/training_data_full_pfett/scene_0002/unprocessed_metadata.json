@@ -1,0 +1,1008 @@
+{
+  "scene_id": 2,
+  "status": "unprocessed",
+  "num_beams": 21,
+  "beams": [
+    {
+      "beam_id": 0,
+      "beam_type": "Pfette",
+      "stl_file": "unprocessed_beam_00.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 0.0,
+        "y": 0.0,
+        "z": 4.15,
+        "length": 9.910392862998805,
+        "width": 0.12957037710021363,
+        "height": 0.16148987433636128
+      }
+    },
+    {
+      "beam_id": 1,
+      "beam_type": "Pfette",
+      "stl_file": "unprocessed_beam_01.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 1.93,
+        "y": 0.0,
+        "z": 2.2,
+        "length": 9.909451349665588,
+        "width": 0.13824809164592478,
+        "height": 0.15491004463011623
+      }
+    },
+    {
+      "beam_id": 2,
+      "beam_type": "Pfette",
+      "stl_file": "unprocessed_beam_02.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": -1.93,
+        "y": 0.0,
+        "z": 2.2,
+        "length": 9.58650808765298,
+        "width": 0.1426239612597146,
+        "height": 0.1539896402102357
+      }
+    },
+    {
+      "beam_id": 3,
+      "beam_type": "Pfette",
+      "stl_file": "unprocessed_beam_03.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 3.73,
+        "y": 0.0,
+        "z": 0.4000000000000008,
+        "length": 9.673558185144014,
+        "width": 0.1426649443209245,
+        "height": 0.1608742628283112
+      }
+    },
+    {
+      "beam_id": 4,
+      "beam_type": "Pfette",
+      "stl_file": "unprocessed_beam_04.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": -3.73,
+        "y": 0.0,
+        "z": 0.4000000000000008,
+        "length": 9.488411923482907,
+        "width": 0.14029871866784643,
+        "height": 0.15053319596940745
+      }
+    },
+    {
+      "beam_id": 5,
+      "beam_type": "Pfosten",
+      "stl_file": "unprocessed_beam_05.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 1.93,
+        "y": -2.5,
+        "z": 0.0,
+        "width": 0.10713337869541684,
+        "depth": 0.10884938231598723,
+        "height": 2.1976947349527713
+      }
+    },
+    {
+      "beam_id": 6,
+      "beam_type": "Pfosten",
+      "stl_file": "unprocessed_beam_06.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": -1.93,
+        "y": -2.5,
+        "z": 0.0,
+        "width": 0.10866403713393671,
+        "depth": 0.08949113692522653,
+        "height": 2.202098436048682
+      }
+    },
+    {
+      "beam_id": 7,
+      "beam_type": "Pfosten",
+      "stl_file": "unprocessed_beam_07.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 1.93,
+        "y": 0.0,
+        "z": 0.0,
+        "width": 0.08913216260967195,
+        "depth": 0.09820305818993474,
+        "height": 2.0386123662642452
+      }
+    },
+    {
+      "beam_id": 8,
+      "beam_type": "Pfosten",
+      "stl_file": "unprocessed_beam_08.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": -1.93,
+        "y": 0.0,
+        "z": 0.0,
+        "width": 0.09067899929253194,
+        "depth": 0.1024186327244649,
+        "height": 2.0904048002416946
+      }
+    },
+    {
+      "beam_id": 9,
+      "beam_type": "Pfosten",
+      "stl_file": "unprocessed_beam_09.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 1.93,
+        "y": 2.5,
+        "z": 0.0,
+        "width": 0.09017364210774959,
+        "depth": 0.093007655176764,
+        "height": 2.13993051400132
+      }
+    },
+    {
+      "beam_id": 10,
+      "beam_type": "Pfosten",
+      "stl_file": "unprocessed_beam_10.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": -1.93,
+        "y": 2.5,
+        "z": 0.0,
+        "width": 0.0991946871145575,
+        "depth": 0.09254358065662414,
+        "height": 2.256162690085966
+      }
+    },
+    {
+      "beam_id": 11,
+      "beam_type": "Sparren",
+      "stl_file": "unprocessed_beam_11.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 0.0,
+        "y": -5.0,
+        "z": 4.470000000000001,
+        "width": 0.09974604753327627,
+        "height": 0.16010473440037098,
+        "projected_length": 4.398203386006704,
+        "steepness": 1.0,
+        "notch_x_mittel": 2.2495918362753407,
+        "notch_mittel_depth": 0.05,
+        "notch_x_fuss": 3.8680035520461353,
+        "notch_fuss_depth": 0.05,
+        "notch_top_length": 0.05480343693260413,
+        "notch_top_cut_depth": 0.0
+      }
+    },
+    {
+      "beam_id": 12,
+      "beam_type": "Sparren",
+      "stl_file": "unprocessed_beam_12.stl",
+      "parameters": {
+        "theta_z": 3.141592653589793,
+        "x": 0.0,
+        "y": -5.0,
+        "z": 4.470000000000001,
+        "width": 0.10301128519910735,
+        "height": 0.1692910216017851,
+        "projected_length": 4.500007525053195,
+        "steepness": 1.0,
+        "notch_x_mittel": 2.3310920543542233,
+        "notch_mittel_depth": 0.05,
+        "notch_x_fuss": 3.665371604770443,
+        "notch_fuss_depth": 0.05,
+        "notch_top_length": 0.07302148574324692,
+        "notch_top_cut_depth": 0.0
+      }
+    },
+    {
+      "beam_id": 13,
+      "beam_type": "Sparren",
+      "stl_file": "unprocessed_beam_13.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 0.0,
+        "y": -2.5,
+        "z": 4.470000000000001,
+        "width": 0.09891318944944166,
+        "height": 0.158734945260536,
+        "projected_length": 4.748903266497391,
+        "steepness": 1.0,
+        "notch_x_mittel": 2.030263547473008,
+        "notch_mittel_depth": 0.05,
+        "notch_x_fuss": 4.185680892903137,
+        "notch_fuss_depth": 0.05,
+        "notch_top_length": 0.0719893672066646,
+        "notch_top_cut_depth": 0.0
+      }
+    },
+    {
+      "beam_id": 14,
+      "beam_type": "Sparren",
+      "stl_file": "unprocessed_beam_14.stl",
+      "parameters": {
+        "theta_z": 3.141592653589793,
+        "x": 0.0,
+        "y": -2.5,
+        "z": 4.470000000000001,
+        "width": 0.09373142383412537,
+        "height": 0.15732684803350042,
+        "projected_length": 4.815765453604051,
+        "steepness": 1.0,
+        "notch_x_mittel": 1.9203337865907582,
+        "notch_mittel_depth": 0.05,
+        "notch_x_fuss": 3.398122011010622,
+        "notch_fuss_depth": 0.05,
+        "notch_top_length": 0.05862297575488091,
+        "notch_top_cut_depth": 0.0
+      }
+    },
+    {
+      "beam_id": 15,
+      "beam_type": "Sparren",
+      "stl_file": "unprocessed_beam_15.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 0.0,
+        "y": 0.0,
+        "z": 4.470000000000001,
+        "width": 0.09350716556105432,
+        "height": 0.16987704022842545,
+        "projected_length": 4.923522282039456,
+        "steepness": 1.0,
+        "notch_x_mittel": 2.255219598462699,
+        "notch_mittel_depth": 0.05,
+        "notch_x_fuss": 3.886544553194647,
+        "notch_fuss_depth": 0.05,
+        "notch_top_length": 0.08192319372032568,
+        "notch_top_cut_depth": 0.0
+      }
+    },
+    {
+      "beam_id": 16,
+      "beam_type": "Sparren",
+      "stl_file": "unprocessed_beam_16.stl",
+      "parameters": {
+        "theta_z": 3.141592653589793,
+        "x": 0.0,
+        "y": 0.0,
+        "z": 4.470000000000001,
+        "width": 0.09503838169876268,
+        "height": 0.1558604646363888,
+        "projected_length": 4.521660187770328,
+        "steepness": 1.0,
+        "notch_x_mittel": 1.878130638954345,
+        "notch_mittel_depth": 0.05,
+        "notch_x_fuss": 3.4138271204585897,
+        "notch_fuss_depth": 0.05,
+        "notch_top_length": 0.09174190504107457,
+        "notch_top_cut_depth": 0.0
+      }
+    },
+    {
+      "beam_id": 17,
+      "beam_type": "Sparren",
+      "stl_file": "unprocessed_beam_17.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 0.0,
+        "y": 2.5,
+        "z": 4.470000000000001,
+        "width": 0.0991203237903227,
+        "height": 0.16008000878758305,
+        "projected_length": 4.341187185781229,
+        "steepness": 1.0,
+        "notch_x_mittel": 1.7957830398350665,
+        "notch_mittel_depth": 0.05,
+        "notch_x_fuss": 3.7038564025226477,
+        "notch_fuss_depth": 0.05,
+        "notch_top_length": 0.08494076048355255,
+        "notch_top_cut_depth": 0.0
+      }
+    },
+    {
+      "beam_id": 18,
+      "beam_type": "Sparren",
+      "stl_file": "unprocessed_beam_18.stl",
+      "parameters": {
+        "theta_z": 3.141592653589793,
+        "x": 0.0,
+        "y": 2.5,
+        "z": 4.470000000000001,
+        "width": 0.1035512058443067,
+        "height": 0.15758421133883274,
+        "projected_length": 4.061715603025095,
+        "steepness": 1.0,
+        "notch_x_mittel": 2.2527941981777047,
+        "notch_mittel_depth": 0.05,
+        "notch_x_fuss": 3.603980477956856,
+        "notch_fuss_depth": 0.05,
+        "notch_top_length": 0.07372081998380656,
+        "notch_top_cut_depth": 0.0
+      }
+    },
+    {
+      "beam_id": 19,
+      "beam_type": "Sparren",
+      "stl_file": "unprocessed_beam_19.stl",
+      "parameters": {
+        "theta_z": 0.0,
+        "x": 0.0,
+        "y": 5.0,
+        "z": 4.470000000000001,
+        "width": 0.09288326412774539,
+        "height": 0.16324404038536652,
+        "projected_length": 4.398771083285953,
+        "steepness": 1.0,
+        "notch_x_mittel": 1.9975127289243357,
+        "notch_mittel_depth": 0.05,
+        "notch_x_fuss": 3.727669961768484,
+        "notch_fuss_depth": 0.05,
+        "notch_top_length": 0.06328923555857383,
+        "notch_top_cut_depth": 0.0
+      }
+    },
+    {
+      "beam_id": 20,
+      "beam_type": "Sparren",
+      "stl_file": "unprocessed_beam_20.stl",
+      "parameters": {
+        "theta_z": 3.141592653589793,
+        "x": 0.0,
+        "y": 5.0,
+        "z": 4.470000000000001,
+        "width": 0.1007646685798663,
+        "height": 0.1694582137974965,
+        "projected_length": 4.1514985937142646,
+        "steepness": 1.0,
+        "notch_x_mittel": 1.8412697491652565,
+        "notch_mittel_depth": 0.05,
+        "notch_x_fuss": 3.4105280533430133,
+        "notch_fuss_depth": 0.05,
+        "notch_top_length": 0.08072798913794052,
+        "notch_top_cut_depth": 0.0
+      }
+    }
+  ],
+  "connectivity": {
+    "top": [
+      [
+        5,
+        1,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        6,
+        2,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        7,
+        1,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        8,
+        2,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        9,
+        1,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        10,
+        2,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        0,
+        11,
+        4,
+        5,
+        0,
+        2
+      ],
+      [
+        1,
+        11,
+        4,
+        5,
+        0,
+        1
+      ],
+      [
+        3,
+        11,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        0,
+        12,
+        4,
+        5,
+        0,
+        2
+      ],
+      [
+        2,
+        12,
+        4,
+        5,
+        0,
+        1
+      ],
+      [
+        4,
+        12,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        0,
+        13,
+        4,
+        5,
+        0,
+        2
+      ],
+      [
+        1,
+        13,
+        4,
+        5,
+        0,
+        1
+      ],
+      [
+        3,
+        13,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        0,
+        14,
+        4,
+        5,
+        0,
+        2
+      ],
+      [
+        2,
+        14,
+        4,
+        5,
+        0,
+        1
+      ],
+      [
+        4,
+        14,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        0,
+        15,
+        4,
+        5,
+        0,
+        2
+      ],
+      [
+        1,
+        15,
+        4,
+        5,
+        0,
+        1
+      ],
+      [
+        3,
+        15,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        0,
+        16,
+        4,
+        5,
+        0,
+        2
+      ],
+      [
+        2,
+        16,
+        4,
+        5,
+        0,
+        1
+      ],
+      [
+        4,
+        16,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        0,
+        17,
+        4,
+        5,
+        0,
+        2
+      ],
+      [
+        1,
+        17,
+        4,
+        5,
+        0,
+        1
+      ],
+      [
+        3,
+        17,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        0,
+        18,
+        4,
+        5,
+        0,
+        2
+      ],
+      [
+        2,
+        18,
+        4,
+        5,
+        0,
+        1
+      ],
+      [
+        4,
+        18,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        0,
+        19,
+        4,
+        5,
+        0,
+        2
+      ],
+      [
+        1,
+        19,
+        4,
+        5,
+        0,
+        1
+      ],
+      [
+        3,
+        19,
+        4,
+        5,
+        0,
+        0
+      ],
+      [
+        0,
+        20,
+        4,
+        5,
+        0,
+        2
+      ],
+      [
+        2,
+        20,
+        4,
+        5,
+        0,
+        1
+      ],
+      [
+        4,
+        20,
+        4,
+        5,
+        0,
+        0
+      ]
+    ],
+    "bottom": [],
+    "left": [
+      [
+        0,
+        12,
+        1,
+        0,
+        0,
+        2
+      ],
+      [
+        2,
+        12,
+        1,
+        0,
+        0,
+        1
+      ],
+      [
+        4,
+        12,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        14,
+        1,
+        0,
+        0,
+        2
+      ],
+      [
+        2,
+        14,
+        1,
+        0,
+        0,
+        1
+      ],
+      [
+        4,
+        14,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        16,
+        1,
+        0,
+        0,
+        2
+      ],
+      [
+        2,
+        16,
+        1,
+        0,
+        0,
+        1
+      ],
+      [
+        4,
+        16,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        18,
+        1,
+        0,
+        0,
+        2
+      ],
+      [
+        2,
+        18,
+        1,
+        0,
+        0,
+        1
+      ],
+      [
+        4,
+        18,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        20,
+        1,
+        0,
+        0,
+        2
+      ],
+      [
+        2,
+        20,
+        1,
+        0,
+        0,
+        1
+      ],
+      [
+        4,
+        20,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        11,
+        12,
+        1,
+        0,
+        3,
+        3
+      ],
+      [
+        13,
+        14,
+        1,
+        0,
+        3,
+        3
+      ],
+      [
+        15,
+        16,
+        1,
+        0,
+        3,
+        3
+      ],
+      [
+        17,
+        18,
+        1,
+        0,
+        3,
+        3
+      ],
+      [
+        19,
+        20,
+        1,
+        0,
+        3,
+        3
+      ]
+    ],
+    "right": [
+      [
+        0,
+        11,
+        0,
+        1,
+        0,
+        2
+      ],
+      [
+        1,
+        11,
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        3,
+        11,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        13,
+        0,
+        1,
+        0,
+        2
+      ],
+      [
+        1,
+        13,
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        3,
+        13,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        15,
+        0,
+        1,
+        0,
+        2
+      ],
+      [
+        1,
+        15,
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        3,
+        15,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        17,
+        0,
+        1,
+        0,
+        2
+      ],
+      [
+        1,
+        17,
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        3,
+        17,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        19,
+        0,
+        1,
+        0,
+        2
+      ],
+      [
+        1,
+        19,
+        0,
+        1,
+        0,
+        1
+      ],
+      [
+        3,
+        19,
+        0,
+        1,
+        0,
+        0
+      ]
+    ],
+    "front": [],
+    "back": []
+  },
+  "identity_pairs": [
+    [
+      5,
+      6
+    ],
+    [
+      6,
+      7
+    ],
+    [
+      7,
+      8
+    ],
+    [
+      8,
+      9
+    ],
+    [
+      9,
+      10
+    ],
+    [
+      11,
+      12
+    ],
+    [
+      12,
+      13
+    ],
+    [
+      13,
+      14
+    ],
+    [
+      14,
+      15
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      16,
+      17
+    ],
+    [
+      17,
+      18
+    ],
+    [
+      18,
+      19
+    ],
+    [
+      19,
+      20
+    ]
+  ]
+}

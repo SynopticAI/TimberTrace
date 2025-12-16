@@ -1,0 +1,17 @@
+{
+  "num_scenes": 5,
+  "num_successful": 5,
+  "num_failed": 0,
+  "beam_types": {
+    "0": "Pfosten",
+    "1": "Pfette",
+    "2": "Sparren"
+  },
+  "scene_dirs": [
+    "scene_0000",
+    "scene_0001",
+    "scene_0002",
+    "scene_0003",
+    "scene_0004"
+  ]
+}
